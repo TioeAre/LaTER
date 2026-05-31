@@ -1,0 +1,166 @@
+model_path: Qwen/Qwen3-14B
+train_data: data/processed_mix_ds/sft_train.parquet
+teacher_cache_dir: data/precomputed_teacher_mix_ds
+output_dir: checkpoints/deepspeed/sft_latent_qwen3_14b_mix_ds_lora
+debug: false
+
+seed: 42
+val_ratio: 0.01
+max_length: 38912
+micro_batch_size: 1
+eval_batch_size: 1
+gradient_accumulation_steps: 8
+num_workers: 2
+num_epochs: 1
+max_train_steps: 0
+max_train_samples: 0
+max_val_samples: 0
+
+learning_rate: 1.0e-4
+min_lr: 1.0e-5
+# learning_rate: 1.0e-5
+# min_lr: 2.0e-6
+# learning_rate: 2.0e-6 # red stage 2
+# min_lr: 2.0e-7
+weight_decay: 0.01
+adam_beta1: 0.9
+adam_beta2: 0.95
+adam_eps: 1.0e-8
+warmup_ratio: 0.03
+max_grad_norm: 1.0
+optimizer_foreach: false
+
+mixed_precision: bf16
+mixed_precision_policy: bf16
+torch_dtype: bfloat16
+attn_implementation: flash_attention_2
+transformer_layer_cls: Qwen3DecoderLayer
+gradient_checkpointing: true
+global_stateless_forward: true
+legacy_staged_forward_fallback: false
+latent_projector_dropout: 0.2
+pytorch_cuda_alloc_conf: expandable_segments:True,max_split_size_mb:128
+
+distributed_backend: deepspeed
+context_parallel_size: 1
+deepspeed_zero_stage: 3
+deepspeed_offload_optimizer_device: none
+deepspeed_offload_param_device: none
+deepspeed_zero3_init_flag: true
+deepspeed_contiguous_gradients: false
+deepspeed_overlap_comm: false
+deepspeed_reduce_bucket_size: 2000000
+deepspeed_stage3_prefetch_bucket_size: 2000000
+deepspeed_stage3_param_persistence_threshold: 10000
+deepspeed_sub_group_size: 50000000
+deepspeed_stage3_max_live_parameters: 20000000
+deepspeed_stage3_max_reuse_distance: 20000000
+deepspeed_gather_16bit_weights_on_model_save: true
+
+lora_r: 64
+lora_alpha: 128
+lora_dropout: 0.05
+lora_bias: none
+lora_target_modules: all-linear
+lora_task_type: CAUSAL_LM
+lora_use_rslora: true
+lora_init_lora_weights: pissa_niter_16
+lora_ensure_weight_tying: true
+lora_modules_to_save:
+  - latent_projector
+  - lm_head
+  - model.embed_tokens
+
+freeze_base_token_rows: true
+freeze_base_token_rows_apply_to_lm_head: true
+freeze_base_token_rows_scope: always
+
+kl_temperature: 1.0
+kl_loss_weight: 0
+cot_ce_loss_weight: 0.25
+latent_start_ce_loss_weight: 1
+latent_end_ce_loss_weight: 1
+im_end_ce_loss_weight: 1
+halt_dense_loss_stage1_weight: 0.5
+halt_dense_loss_stage2_final_weight: 0.25
+early_exit_front_fraction: 1.0
+early_exit_front_weight: 2.0
+early_exit_nonfront_weight: 1.0
+early_exit_rank_margin: 0.3
+latent_end_soft_target_curve: smoothstep
+latent_end_soft_target_temperature: 0.2
+latent_end_soft_target_power: 1.5
+latent_end_soft_loss_weight: 1.0
+other_end_hard_loss_weight: 0.25
+other_end_rank_margin: 0.0
+
+student_max_new_tokens: 38912
+val_max_new_tokens: 256
+val_max_new_tokens_warmup_steps: 3000
+val_max_new_tokens_warmup: 256
+eval_do_sample: true
+eval_temperature: 0.6
+eval_top_p: 0.95
+eval_top_k: 20
+latent_max_steps: 128
+cot_max_new_tokens: 38912
+supervised_logits_chunk_size: 64
+discrete_chunk_size: 128
+
+train_stage: 2
+stage2_start_fraction: 0.0
+max_auto_stage_restarts: 0
+stage2_easy_sample_prob: 0.2
+stage2_easy_cot_max_tokens: 16384
+use_custom_attention_bias: false
+lazy_dataset: true
+latent_bptt_window: 0
+enable_rank_pad_sync: true
+kl_topk_dim: 128
+
+curriculum_power: 1.1
+
+save_every_steps: 250
+eval_every_steps: 250
+max_val_batches: 1
+eval_generation_mode: rank_sharded_lockstep
+eval_log_mode: main_aggregate_plus_rank_details
+save_training_state: false
+save_on_exception: false
+resume_training: false
+resume_from_checkpoint: latest
+
+enable_memory_profile: false
+enable_forward_memory_breakdown_log: false
+enable_hybrid_cache_debug_log: false
+enable_discrete_deadlock_probe_log: false
+discrete_deadlock_probe_chunk_idx: -1
+discrete_deadlock_probe_layers: []
+discrete_deadlock_probe_cuda_sync: false
+enable_discrete_safe_attention: false
+discrete_attention_impl: sdpa
+enable_loss_alignment_debug: false
+loss_alignment_debug_every_steps: 1
+alignment_debug_max_samples: 1
+debug_first_batch_use_max_length_sample: false
+memory_profile_log_to_console: false
+log_level: INFO
+log_dir: logs/sft_latent_qwen3_14b_mix_ds_lora
+train_log_file: train.log
+
+enable_zero3_trace_probe_log: false
+zero3_trace_probe_every_steps: 1
+zero3_trace_probe_max_modules: 128
+zero3_trace_probe_record_limit: 256
+
+enable_deepspeed_submodule_trace_log: false
+deepspeed_submodule_trace_every_steps: 1
+deepspeed_submodule_trace_record_limit: 256
+deepspeed_submodule_trace_log_per_record: false
+deepspeed_submodule_trace_log_record_limit: 256
+
+enable_tensorboard: true
+tensorboard_root: /tensorboard_logs
+tensorboard_run_name: sft_latent_qwen3_14b_lora
+tensorboard_flush_secs: 30
+tensorboard_log_every_steps: 1

@@ -1,0 +1,48 @@
+#!/usr/bin/bash
+
+SCRIPT_DIR=$(dirname "$0")
+PROJECT_ROOT_DIR=$(cd "$SCRIPT_DIR/../../../.." && pwd)
+CONFIG_FILE="$PROJECT_ROOT_DIR/.env"
+# shellcheck disable=SC1090
+[ -f "$CONFIG_FILE" ] && source "$CONFIG_FILE"
+
+export TASK="arc_challenge"
+export EXPERIMENT_NAME="other_models"
+
+export METHOD="latent_switch"
+export DRAW_ATTENTION=false
+export SAVE_STATES=false
+
+export COT_SWITCH_ENTROPY_THRESHOLD=2    # red
+export LATENT_ENTROPY_THRESHOLD=3
+
+# export BASE_MODEL_NAME="models/DeepSeek-R1-Distill-Llama-8B"
+export BASE_MODEL_NAME="models/Olmo-3-32B-Think"
+# models/Olmo-3-32B-Think
+
+${CONDA_BIN:-conda} run -n later --live-stream python later/src/eval/eval.py --method "$METHOD" \
+    --model_name "$BASE_MODEL_NAME" \
+    --task "$TASK" \
+    --generate_bs "$GENERATE_BS" \
+    --max_samples "$MAX_SAMPLES" \
+    --split "$SPLIT" \
+    --max_new_tokens "$MAX_NEW_TOKENS" \
+    --latent_steps "$LATENT_STEPS" \
+    --temperature "$TEMPERATURE" \
+    --top_p "$TOP_P"
+
+
+export METHOD="baseline"
+export DRAW_ATTENTION=false
+export SAVE_STATES=false
+
+${CONDA_BIN:-conda} run -n later --live-stream python later/src/eval/eval.py --method "$METHOD" \
+    --model_name "$BASE_MODEL_NAME" \
+    --task "$TASK" \
+    --generate_bs "$GENERATE_BS" \
+    --max_samples "$MAX_SAMPLES" \
+    --split "$SPLIT" \
+    --max_new_tokens "$MAX_NEW_TOKENS" \
+    --latent_steps "$LATENT_STEPS" \
+    --temperature "$TEMPERATURE" \
+    --top_p "$TOP_P"

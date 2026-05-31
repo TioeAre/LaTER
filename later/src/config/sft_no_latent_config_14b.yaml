@@ -1,0 +1,87 @@
+model_path: Qwen/Qwen3-14B
+train_data: data/processed_mix_ds/sft_train.parquet
+teacher_cache_dir: data/precomputed_teacher_mix_ds
+output_dir: checkpoints/fsdp_cp/sft_no_latent_qwen3_14b_mix_ds
+debug: false
+
+seed: 42
+val_ratio: 0.05
+max_length: 38192
+micro_batch_size: 1
+eval_batch_size: 1
+gradient_accumulation_steps: 1
+num_workers: 2
+num_epochs: 1
+max_train_steps: 0
+max_train_samples: 0
+max_val_samples: 0
+
+learning_rate: 2.0e-6
+min_lr: 2.0e-7
+weight_decay: 0.01
+adam_beta1: 0.9
+adam_beta2: 0.95
+adam_eps: 1.0e-8
+warmup_ratio: 0.03
+max_grad_norm: 1.0
+optimizer_foreach: false
+
+mixed_precision: bf16
+mixed_precision_policy: bf16
+torch_dtype: bfloat16
+attn_implementation: sdpa
+transformer_layer_cls: Qwen3DecoderLayer
+gradient_checkpointing: true
+pytorch_cuda_alloc_conf: expandable_segments:True,max_split_size_mb:128
+
+distributed_backend: fsdp
+context_parallel_size: 8
+context_parallel_comm_strategy: allgather
+context_parallel_padding_factor: 2
+rope_scaling_type: yarn
+rope_scaling_factor: 1.25
+rope_original_max_position_embeddings: 32768
+
+kl_temperature: 1.0
+kl_loss_weight: 0
+cot_ce_loss_weight: 0.5
+im_end_ce_loss_weight: 1.0
+
+student_max_new_tokens: 38192
+val_max_new_tokens: 256
+val_max_new_tokens_warmup_steps: 24000
+val_max_new_tokens_warmup: 256
+eval_do_sample: true
+eval_temperature: 0.6
+eval_top_p: 0.95
+eval_top_k: 20
+
+lazy_dataset: true
+kl_topk_dim: 128
+curriculum_power: 1.1
+
+save_every_steps: 2000
+eval_every_steps: 2000
+max_val_batches: 1
+save_training_state: false
+save_on_exception: false
+resume_training: false
+resume_from_checkpoint: latest
+
+enable_memory_profile: false
+enable_forward_memory_breakdown_log: false
+enable_hybrid_cache_debug_log: false
+enable_loss_alignment_debug: false
+loss_alignment_debug_every_steps: 1
+alignment_debug_max_samples: 1
+debug_first_batch_use_max_length_sample: false
+memory_profile_log_to_console: false
+log_level: INFO
+log_dir: logs/sft_no_latent_qwen3_14b_mix_ds
+train_log_file: train.log
+
+enable_tensorboard: true
+tensorboard_root: /tensorboard_logs
+tensorboard_run_name: sft_no_latent_qwen3_14b
+tensorboard_flush_secs: 30
+tensorboard_log_every_steps: 1

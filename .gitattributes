@@ -1,0 +1,13 @@
+# git config filter.gitignore.clean "sed '/ ### gitignore$/'d"
+# git config filter.gitignore.smudge cat
+*.sh filter=gitignore
+*.py filter=gitignore
+.env filter=gitignore
+
+### 不再跟踪文件
+# git update-index --assume-unchanged ""
+# git update-index --no-assume-unchanged ""
+
+### 跟踪文件但不修改
+# git update-index --skip-worktree ""
+# git update-index --no-skip-worktree ""
